@@ -14,6 +14,9 @@ randomly selected markets. A different promotion is used at each
 location, and the weekly sales of the new item are recorded for the
 first four weeks.
 
+## Goal
+Evaluate A/B testing results and decide which marketing strategy works the best.
+
 ## Data
 
 The data is found on
