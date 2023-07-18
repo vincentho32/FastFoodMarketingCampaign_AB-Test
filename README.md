@@ -1,6 +1,6 @@
 # Fast Food Marketing Campaign :  AB-Testing
 
-## Authors
+## Author
 
 -   Vincent Ho
 
