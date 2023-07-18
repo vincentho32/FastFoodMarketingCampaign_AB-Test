@@ -38,6 +38,6 @@ The report is available [here](/doc/fast_food_ABtest.pdf).
 
 ## Acknowledgements
 
-1.  Kaggle, ANASTASIIA CHEBOTINA, IBM Watson Analytics community for this dataset.
+Kaggle, ANASTASIIA CHEBOTINA, IBM Watson Analytics community for this dataset.
 
 
