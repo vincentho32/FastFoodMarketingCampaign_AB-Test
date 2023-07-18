@@ -21,14 +21,6 @@ The data is found on
 under IBM Watson Analytics Marketing Campaign. All rights belong to the
 respective owner.
 
-Each row in the dataset contains a different Pokemon with various
-attributes. The attributes are measurements of the base Pokemon, such as
-`attack`, `speed` or `defense`.The different types of Pokemon are
-closely related to the other attributes it possesses. For example, a
-rock type Pokemon is likely to have higher defensive statistics (such as
-`defense` or `health points`) as well as rock-type abilities. It is also
-most likely to be coloured grey. A complete description of each feature
-in the raw dataset is listed below:
 
 | Columns            | Description                                                 |
 |----------------------------|--------------------------------------------|
