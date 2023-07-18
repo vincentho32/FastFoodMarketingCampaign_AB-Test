@@ -15,7 +15,7 @@ location, and the weekly sales of the new item are recorded for the
 first four weeks.
 
 ## Goal
-Evaluate A/B testing results and decide which marketing strategy works the best.
+Conduct A/B testing and decide which marketing strategy works the best.
 
 ## Data
 
