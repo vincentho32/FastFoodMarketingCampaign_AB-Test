@@ -1,10 +1,4 @@
----
-editor_options: 
-  markdown: 
-    wrap: 72
----
-
-# FastFoodMarketingCampaign_AB-Test
+# Fast Food Marketing Campaign :  AB-Testing
 
 ## Authors
 
