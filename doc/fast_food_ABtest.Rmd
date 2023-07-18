@@ -1,0 +1,203 @@
+---
+title: Fast Food Marketing Campaign AB Test
+author: "Vincent Ho"
+output:
+  pdf_document:
+    toc: true
+
+---
+
+
+```{r load libraries, message=FALSE, warning=FALSE,echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(kableExtra)
+library(tidyverse)
+library(binom)
+library(broom)
+library(DescTools)
+```
+
+
+
+\newpage
+
+# Background
+
+A fast-food chain plans to add a new item to its menu. However, they are still undecided between three possible marketing campaigns for promoting the new product. In order to determine which promotion has the greatest effect on sales, the new item is introduced at locations in several randomly selected markets. A different promotion is used at each location, and the weekly sales of the new item are recorded for the first four weeks.
+
+# Goal
+
+Evaluate A/B testing results and decide which marketing strategy works the best.
+
+# Question
+
+Does the type of promotion and the week of implementation have an impact on the sales of the fast-food chain? Furthermore, is there any interaction between these factors that influences the sales outcome?
+
+
+# Data
+
+```{r}
+ABn_data <- read_csv("data/WA_Marketing-Campaign.csv", show_col_types = FALSE)
+head(ABn_data)
+
+```
+\
+
+# Methods
+
+Our study focuses on two main factors of interest: Promotion Types (Promotion) and the choice of the week for implementing the promotion (Week). The experimental units, which are the stores in this case, belong to specific levels of MarketSize and were randomized within each treatment combination of Promotion and Week. The response variable in this experiment is SalesInThousands, 
+which is measured on a continuous scale.
+
+Although MarketSize is not the primary factor of interest in our experiment, we use it as a standalone blocking factor. The purpose of using blocks is to group the experimental units into homogeneous categories, which helps reduce the impact of nuisance factors such as Market Size on the experimental error.
+
+To enhance visualization and understanding, I have converted the Promotion and Week columns into strings. The first promotion, implemented in the first week of the month, is designated as the baseline level or the control group for comparison.
+
+\
+
+
+```{r ABn_data}
+
+ABn_data <- ABn_data %>% select('MarketSize', 'Promotion', 'week', 'SalesInThousands') %>%
+  mutate(Promotion = gsub("1", "First_Promotion", Promotion)) %>%
+  mutate(Promotion = gsub("2", "Second_Promotion", Promotion)) %>%
+  mutate(Promotion = gsub("3", "Third_Promotion", Promotion)) %>%
+  mutate(week = gsub("1", "First_week", week)) %>%
+  mutate(week = gsub("2", "Second_week", week)) %>%
+  mutate(week = gsub("3", "Third_week", week)) %>%
+  mutate(week = gsub("4", "Fourth_week", week)) %>%
+  mutate( Promotion = as.factor(Promotion), week = as.factor(week))
+
+# Releveling factors according to the control treatment
+ABn_data$Promotion <- fct_relevel(
+  ABn_data$Promotion,
+  c("First_Promotion", "Second_Promotion", "Third_Promotion")
+)
+
+ABn_data$week <- fct_relevel(
+  ABn_data$week,
+  c("First_week", "Second_week", "Third_week", "Fourth_week")
+)
+
+ABn_data
+```
+
+\
+
+# Exploratory data analysis
+
+```{r figure 1, fig.cap='Investigating the impact of Promotion and Week on Sales across different market sizes', out.width='100%', fig.align='center'}
+
+ABn_boxplots <- ABn_data %>%
+  ggplot(aes(Promotion, SalesInThousands, fill = week)) +
+  geom_boxplot() +
+  theme(
+    plot.title = element_text(size = 15, face = "bold"),
+    axis.text.x = element_text(size = 8,angle = 15),
+    axis.title = element_text(size = 12),
+    legend.text = element_text(size = 8, margin = margin(r = 0.5, unit = "cm")),
+    legend.title = element_text(size = 11),
+    legend.position = "bottom") +
+  ggtitle("Side-by-Side Boxplots ") +
+  xlab("Different types of promotions") +
+  ylab("Sales In Thousands")+
+  guides(fill = guide_legend(title = "Week in each month"))+
+  facet_wrap(~MarketSize) 
+
+
+ABn_boxplots
+```
+\
+
+Regarding the facets, i.e. blocking factor levels, the overall sales of large market size is noticeably higher than medium and small market size which makes sense. However, it is interesting to see that the overall sales of medium market is lower than the small market and it might require further investigation. 
+Across three different size of markets, we can also see a small u-shaped where the second promotion is generally lower than the other two promotions.
+
+\
+
+```{r figure 2, fig.cap='Graphical evidence of a two-factor interaction', out.width='100%', fig.align='center'}
+par(cex = 0.8)
+
+interaction.plot(
+  x.factor = ABn_data$Promotion,
+  trace.factor = ABn_data$week,
+  response = ABn_data$SalesInThousands,
+  col = c("red", "blue","green","orange"),
+  xlab = "Promotion Types", ylab = "Sales In Thousands",
+  trace.label = "week", main = "Interaction Plot"
+)
+```
+\
+
+
+It seems like The interaction plot shows some crossed behaviors among the treatments in Promotion and week even though their shapes are similar. This deserves further statistical investigation.
+\
+
+```{r}
+Promotion_anova <- aov(formula = SalesInThousands  ~ Promotion * week + MarketSize, data = ABn_data)
+#anova(Promotion_anova) %>% mutate_if(is.numeric, round, 2)tidy() 
+
+tidy(Promotion_anova) %>% mutate_if(is.numeric, round, 2)
+
+
+```
+
+\
+
+With alpha = 0.05, we have evidence to reject the null hypotheses for the main effects of Promotion but not for the main effects of week and the interaction effects despite the graphical evidence of a two-factor interaction that is shown in figure 2 above.
+
+
+\
+
+# Post-Hoc Tests
+
+After estimating the model, Tukey's honestly significant differences (HSD) test is conducted to reveal all possible pairwise comparisons among the levels of the main and interaction effects while appropriately controlling Type I errors.
+
+```{r}
+tidy_tukey <- tidy(TukeyHSD(Promotion_anova, conf.level = 0.95)) %>% mutate_if(is.numeric, round, 2)
+tidy_tukey
+```
+\
+
+# Conclusion
+
+
+```{r}
+tidy_tukey %>% filter(term == "MarketSize")
+```
+
+\
+
+First of all, it is essential to highlight that the blocking factor MarketSize is statistically significant.
+
+
+\
+
+```{r}
+tidy_tukey %>% filter(grepl("_Promotion$", contrast))
+```
+
+\
+
+Based on the pairwise results, it is statistically significant that during the **second promotion**, the outcome is expected to decrease by 10.77 thousand dollars compared to the **first promotion**.
+
+It is also statistically significant that during the **third promotion**, the outcome is expected to increase by 8.04 thousand dollars compared to the **second promotion**.
+
+However, it is not statistically significant that the **third promotion** is different from **first promotion** because its adjusted p-value is slightly higher than 0.05 .
+
+Therefore, we can conclude that both the first and third promotions are better than the second promotion. However, even though we can see from the estimate column in the above table that during the third promotion, the outcome is expected to decrease by 2.73 thousand dollars compared to the first promotion, we cannot assert that the first promotion is the best. This is because there is no statistical evidence to support that claim, as its adjusted p-value is slightly higher than 0.05.
+
+\
+
+```{r}
+tidy_tukey %>%
+  filter(adj.p.value < 0.05 & grepl("First_Promotion:First_week", contrast))
+```
+
+\
+
+If we focus on the significant difference corresponding to the two-factor interaction, specifically with the control treatment "First Promotion" and "First week" (our CONTROL treatment), we observe that all four rows with statistically significant levels are associated with the "Second Promotion." This leads us to conclude that the "Second Promotion" performs worse than our control group (implementing the first type of promotion in the first week of the month) regardless of which week of the month the promotion is implemented.
+
+
+# Summary
+
+Based on the statistical analysis, we have strong evidence to suggest that both the first and third promotions lead to better outcomes compared to the second promotion. However, we cannot confidently state that the first promotion is superior to the third promotion due to the lack of significant statistical support, as indicated by the adjusted p-values. We also find that the "Second Promotion" shows a significant decline compared to our control group, indicating that implementing the first type of promotion in the first week of the month is more effective than the "Second Promotion."
+
