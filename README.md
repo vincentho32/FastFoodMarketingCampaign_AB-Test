@@ -4,7 +4,7 @@
 
 -   Vincent Ho
 
-## About
+## Background
 
 A fast-food chain plans to add a new item to its menu. However, they are
 still undecided between three possible marketing campaigns for promoting
@@ -39,9 +39,6 @@ The report is available [here](/doc/fast_food_ABtest.pdf).
 ## Acknowledgements
 
 1.  <https://rpubs.com/ksdwivedy/finalRProject>
-2.  Hands-On Data Science for Marketing book by Yoon Hyup Hwang
-3.  [https://unsplash.com/\@shaafi](https://unsplash.com/@shaafi){.uri}
-    for the picture
-4.  IBM Watson Analytics community for this dataset.
+2.  IBM Watson Analytics community for this dataset.
 
 
